@@ -59,6 +59,9 @@
     "kind": "free"
   },
   "ephemeral": true,
+  "voiceCode": {
+    "number": 258
+  },
   "miniapp": {
     "entry": "index.html",
     "capabilities": [],
