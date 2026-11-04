@@ -1,0 +1,9 @@
+{
+  "slug": "night-light",
+  "version": "0.1.0",
+  "entry": "index.html",
+  "name": { "en": "Night Light", "zh-Hans": "小夜灯", "ja": "ナイトライト", "es-419": "Luz nocturna" },
+  "capabilities": [],
+  "capabilityLevel": 2,
+  "minFirmware": null
+}

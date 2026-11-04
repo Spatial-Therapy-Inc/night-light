@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="466" height="466" viewBox="0 0 466 466">
+  <defs>
+    <radialGradient id="halo" cx="233" cy="222" r="233" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD27A" stop-opacity="0.36"/>
+      <stop offset="0.55" stop-color="#E3A857" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="under" cx="233" cy="270" r="168" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF4C4"/>
+      <stop offset="0.55" stop-color="#FFD267"/>
+      <stop offset="1" stop-color="#EA9A3A"/>
+    </radialGradient>
+    <linearGradient id="cap" x1="233" y1="84" x2="233" y2="268" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FBF1DC"/>
+      <stop offset="0.68" stop-color="#F3E6C8"/>
+      <stop offset="1" stop-color="#FFD79C"/>
+    </linearGradient>
+    <linearGradient id="stem" x1="233" y1="268" x2="233" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFEDB0"/>
+      <stop offset="1" stop-color="#EBD9B4"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
+  </defs>
+  <rect width="466" height="466" fill="#000000"/>
+  <circle cx="233" cy="233" r="233" fill="url(#halo)"/>
+  <ellipse cx="233" cy="306" rx="150" ry="66" fill="#FFC96B" opacity="0.34" filter="url(#soft)"/>
+  <ellipse cx="233" cy="360" rx="104" ry="18" fill="#BFA67C"/>
+  <ellipse cx="233" cy="350" rx="104" ry="18" fill="#E9D8B4"/>
+  <ellipse cx="233" cy="266" rx="165" ry="32" fill="url(#under)"/>
+  <path d="M 200 270 C 206 300 198 330 190 350 L 276 350 C 268 330 260 300 266 270 Z" fill="url(#stem)"/>
+  <path d="M 68 266 C 66 156 140 84 233 84 C 326 84 400 156 398 266 C 350 240 116 240 68 266 Z" fill="url(#cap)"/>
+</svg>

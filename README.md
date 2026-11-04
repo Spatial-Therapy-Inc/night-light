@@ -1,6 +1,12 @@
-# night-light
+# 小夜灯（night-light）
 
-一个 Tikpal 应用（Tikpal Voice 的扩展固件），用 Tikpal 开发包做的。
+一个 Tikpal 应用（Tikpal Voice 的扩展固件），用 Tikpal 开发包做的。夜里点一下就亮，照见手边和脚下。
+
+- 进入应用就亮灯，30 秒后自己灭，最后 3 秒渐暗。点屏幕、短按侧键、摇一摇、扣下都能关灯。
+- 长按屏幕转常开；灯灭后留在应用里黑屏待机，点一下马上亮。
+- 光圈和蘑菇灯两种风格，左右滑切换。
+
+规则在 `main/nightlight.c`（纯 C，有主机测试），画面和接线在 `main/main.c`。蘑菇灯的图由 `art/mushroom.svg` 经 `tools/make_art.py` 生成。
 
 ```bash
 ./kit build              # 编译，再跑主机测试
