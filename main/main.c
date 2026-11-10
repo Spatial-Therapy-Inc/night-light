@@ -506,9 +506,8 @@ void app_main(void) {
         return;
     }
     board_rtc_init();
-    // The clock holds UTC and the kit gives apps no time zone yet: UTC+8 until board_pref_tz_apply() is in the kit.
-    setenv("TZ", "CST-8", 1);
-    tzset();
+    // The clock holds UTC: show it in the zone set on the device (Yay's shared settings), UTC+8 when none is written.
+    board_pref_tz_apply("CST-8");
     // delay_tap: the first press of a double click (the app ring) is not a tap; a tap comes 0.45 s after its release.
     ESP_ERROR_CHECK(yk_key_init(&(yk_key_config_t){.delay_tap = true}));
     ESP_ERROR_CHECK(yk_app_on_key(on_key, NULL));
