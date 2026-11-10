@@ -101,7 +101,9 @@ static void test_swipe(void) {
     nl_input(&nl, NL_IN_SWIPE);
     CHECK(nl.lamp == NL_LAMP_MUSHROOM && nl.remaining_ms == NL_LIT_MS && nl.lamp_changed && nl.hint == NL_HINT_MUSHROOM);
     nl_input(&nl, NL_IN_SWIPE);
-    CHECK(nl.lamp == NL_LAMP_RING && nl.hint == NL_HINT_RING);
+    CHECK(nl.lamp == NL_LAMP_MOON && nl.hint == NL_HINT_MOON && nl.remaining_ms == NL_LIT_MS);
+    nl_input(&nl, NL_IN_SWIPE);
+    CHECK(nl.lamp == NL_LAMP_RING && nl.hint == NL_HINT_RING);  // round again
     nl = dark();
     nl_input(&nl, NL_IN_SWIPE);
     CHECK(nl.lamp == NL_LAMP_RING && !nl.lamp_changed);
@@ -290,6 +292,34 @@ static void test_ring_art(void) {
     free(px);
 }
 
+static void test_moon_art(void) {
+    enum { N = NL_ART_SIZE };
+    uint16_t *px = malloc(N * N * sizeof(uint16_t));
+    CHECK(px != NULL);
+    nl_art_moon(px, 0xF3E6C8);
+    const uint16_t solid = (0xF3 >> 3) << 11 | (0xE6 >> 2) << 5 | (0xC8 >> 3);
+    const int cx = N / 2 + NL_MOON_CUT_DX, cy = N / 2 + NL_MOON_CUT_DY;
+    CHECK(px[cy * N + cx] == 0);                 // the cut is dark: the time goes there
+    CHECK(px[(N / 2) * N + N / 2 - 150] == solid);  // the thick of the crescent, on the left
+    CHECK(channel(px[(N / 2) * N + N / 2 - 230], 5, 11) <= 4);  // its soft outer edge, faint by the glass
+    // Into the cut from the crescent's inner edge the light falls away, and is gone well inside.
+    const int edge = cx - NL_MOON_CUT_R;          // where the cut begins on the row through its middle
+    const int a = channel(px[cy * N + edge + 6], 5, 11), b = channel(px[cy * N + edge + 30], 5, 11);
+    CHECK(channel(px[cy * N + edge - 3], 5, 11) == (0xF3 >> 3) && a > b && b > 0);
+    CHECK(px[cy * N + edge + 50] == 0);
+    // About a third of the glass is lit, as much light as the ring's 30 %.
+    int lit = 0, glass = 0;
+    for (int y = 0; y < N; y++)
+        for (int x = 0; x < N; x++) {
+            const int dx = x - N / 2, dy = y - N / 2;
+            if (dx * dx + dy * dy > 233 * 233) continue;
+            glass++;
+            lit += px[y * N + x] == solid;
+        }
+    CHECK(lit * 100 / glass >= 30 && lit * 100 / glass <= 38);
+    free(px);
+}
+
 int main(void) {
     test_on_and_off();
     test_timer();
@@ -301,6 +331,7 @@ int main(void) {
     test_shift();
     test_gestures();
     test_ring_art();
+    test_moon_art();
     printf("%d checks, %d failures\n", checks, failures);
     return failures ? 1 : 0;
 }

@@ -22,8 +22,9 @@
 #define NL_TOP_EDGE_PX 24              // a press starting up here is the system's pull-down, never the app's
 
 typedef enum { NL_LIT, NL_ALWAYS, NL_DARK } nl_mode_t;
-typedef enum { NL_LAMP_RING = 0, NL_LAMP_MUSHROOM = 1 } nl_lamp_t;
-typedef enum { NL_HINT_NONE, NL_HINT_ALWAYS, NL_HINT_BACK_TO_30, NL_HINT_RING, NL_HINT_MUSHROOM, NL_HINT_BATTERY } nl_hint_t;
+// A swipe goes round them in this order. The numbers are saved: only ever add one at the end.
+typedef enum { NL_LAMP_RING = 0, NL_LAMP_MUSHROOM = 1, NL_LAMP_MOON = 2, NL_LAMP_COUNT } nl_lamp_t;
+typedef enum { NL_HINT_NONE, NL_HINT_ALWAYS, NL_HINT_BACK_TO_30, NL_HINT_RING, NL_HINT_MUSHROOM, NL_HINT_BATTERY, NL_HINT_MOON } nl_hint_t;
 typedef enum { NL_IN_TAP, NL_IN_LONG, NL_IN_SWIPE, NL_IN_SIDE_TAP, NL_IN_SHAKE, NL_IN_FACE_DOWN } nl_input_t;
 
 typedef struct {

@@ -48,10 +48,10 @@ void nl_input(nl_t *nl, nl_input_t input) {
         break;
     case NL_IN_SWIPE:
         if (!lit) break;
-        nl->lamp = nl->lamp == NL_LAMP_RING ? NL_LAMP_MUSHROOM : NL_LAMP_RING;
+        nl->lamp = (nl_lamp_t)((nl->lamp + 1) % NL_LAMP_COUNT);  // ring, mushroom, crescent, round again
         nl->lamp_changed = true;
         if (nl->mode == NL_LIT) nl->remaining_ms = NL_LIT_MS;
-        say(nl, nl->lamp == NL_LAMP_RING ? NL_HINT_RING : NL_HINT_MUSHROOM);
+        say(nl, nl->lamp == NL_LAMP_RING ? NL_HINT_RING : nl->lamp == NL_LAMP_MUSHROOM ? NL_HINT_MUSHROOM : NL_HINT_MOON);
         break;
     case NL_IN_SHAKE:
     case NL_IN_FACE_DOWN:

@@ -48,6 +48,11 @@ static const char *TAG = "night-light";
 #define DOT_Y_MUSHROOM 52      // on black above the cap
 #define HINT_Y_RING 322
 #define HINT_Y_MUSHROOM 384
+// The crescent's time, hint and dot sit in the dark of its cut, right of the middle and a little up.
+#define MOON_X 74
+#define TIME_MOON_Y (-28)
+#define DOT_Y_MOON 96
+#define HINT_Y_MOON 290
 #define DOT_SIZE 10
 #define HINT_X 123
 #define HINT_W 220
@@ -75,8 +80,11 @@ static atomic_bool s_leaving;
 static atomic_int s_lamp_to_save;
 static esp_timer_handle_t s_save_timer;
 
-static uint16_t *s_ring_px;
-static lv_image_dsc_t s_ring_dsc, s_mushroom_dsc;
+static lv_image_dsc_t art_dsc(const void *px);  // below, with the rest of the pictures
+
+static uint16_t *s_ring_px, *s_moon_px;
+static lv_image_dsc_t s_ring_dsc, s_mushroom_dsc, s_moon_dsc;
+static bool s_moon_amber;
 static lv_obj_t *s_root, *s_art, *s_time, *s_dot, *s_hint;
 
 static int s_level;
@@ -165,7 +173,7 @@ static nl_lamp_t load_lamp(void) {
         nvs_get_u8(h, NVS_KEY_LAMP, &v);
         nvs_close(h);
     }
-    return v == NL_LAMP_MUSHROOM ? NL_LAMP_MUSHROOM : NL_LAMP_RING;
+    return v < NL_LAMP_COUNT ? (nl_lamp_t)v : NL_LAMP_RING;
 }
 
 static void home_task(void *arg) {
@@ -185,6 +193,7 @@ static const char *hint_text(nl_hint_t hint) {
     case NL_HINT_BACK_TO_30: return T("30 秒后关灯", "Off in 30 s");
     case NL_HINT_RING: return T("光圈", "Ring");
     case NL_HINT_MUSHROOM: return T("蘑菇灯", "Mushroom");
+    case NL_HINT_MOON: return T("月牙", "Crescent");
     case NL_HINT_BATTERY: return T("电量 15%，记得充电", "Battery 15%: time to charge");
     case NL_HINT_NONE: break;
     }
@@ -207,18 +216,42 @@ static void show_time(void) {
     lv_label_set_text(s_time, text);
 }
 
+/** The crescent, drawn the first time it is shown (a third of a second's work; most people keep one lamp), and again
+ *  in the other colour when the battery's amber flash comes while it is up. False with no room for it. */
+static bool moon_ready(bool amber) {
+    if (!s_moon_px) {
+        s_moon_px = heap_caps_malloc(NL_ART_SIZE * NL_ART_SIZE * 2, MALLOC_CAP_SPIRAM);
+        if (!s_moon_px) {
+            ESP_LOGE(TAG, "no room for the crescent");
+            return false;
+        }
+        s_moon_amber = !amber;  // drawn below
+    }
+    if (s_moon_amber != amber) {
+        const int64_t at = now_ms();
+        nl_art_moon(s_moon_px, amber ? YK_AMBER : YK_CREAM);
+        s_moon_amber = amber;
+        printf("NIGHT_LIGHT_MOON ms=%d\n", (int)(now_ms() - at));
+    }
+    s_moon_dsc = art_dsc(s_moon_px);
+    return true;
+}
+
 static void show_lamp(nl_lamp_t lamp) {
-    const bool ring = lamp == NL_LAMP_RING && s_ring_px;
-    lv_image_set_src(s_art, ring ? &s_ring_dsc : &s_mushroom_dsc);
-    lv_obj_set_style_text_color(s_time, lv_color_hex(ring ? YK_INK : YK_PAPER), 0);
-    lv_obj_align(s_time, LV_ALIGN_CENTER, 0, ring ? TIME_RING_Y : TIME_ON_CAP_Y);
-    lv_obj_set_y(s_dot, ring ? DOT_Y_RING : DOT_Y_MUSHROOM);
-    lv_obj_set_y(s_hint, ring ? HINT_Y_RING : HINT_Y_MUSHROOM);
+    if (lamp == NL_LAMP_MOON && !moon_ready(s_shown_amber)) lamp = NL_LAMP_RING;
+    if (lamp == NL_LAMP_RING && !s_ring_px) lamp = NL_LAMP_MUSHROOM;
+    const bool moon = lamp == NL_LAMP_MOON, ring = lamp == NL_LAMP_RING;
+    lv_image_set_src(s_art, moon ? &s_moon_dsc : ring ? &s_ring_dsc : &s_mushroom_dsc);
+    // Light digits on the black of the ring and of the cut; dark ones on the mushroom's cream cap.
+    lv_obj_set_style_text_color(s_time, lv_color_hex(moon || ring ? YK_INK : YK_PAPER), 0);
+    lv_obj_align(s_time, LV_ALIGN_CENTER, moon ? MOON_X : 0, moon ? TIME_MOON_Y : ring ? TIME_RING_Y : TIME_ON_CAP_Y);
+    lv_obj_set_pos(s_dot, YK_CX - DOT_SIZE / 2 + (moon ? MOON_X : 0), moon ? DOT_Y_MOON : ring ? DOT_Y_RING : DOT_Y_MUSHROOM);
+    lv_obj_set_pos(s_hint, HINT_X + (moon ? MOON_X : 0), moon ? HINT_Y_MOON : ring ? HINT_Y_RING : HINT_Y_MUSHROOM);
 }
 
 static void show_amber(bool amber) {
-    if (!s_ring_px) return;
-    nl_art_ring(s_ring_px, RING_AREA_PERCENT, amber ? YK_AMBER : YK_CREAM);  // in place: the image reads this buffer
+    if (s_ring_px) nl_art_ring(s_ring_px, RING_AREA_PERCENT, amber ? YK_AMBER : YK_CREAM);  // in place: the image reads it
+    if (s_moon_px) moon_ready(amber);
     lv_obj_invalidate(s_art);
 }
 
